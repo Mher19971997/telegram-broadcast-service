@@ -28,7 +28,6 @@ export class TelegramBotService implements OnModuleInit, OnModuleDestroy {
   }
 
   private async setupBot() {
-    // Команда /start
     this.bot.command('start', async (ctx: Context) => {
       await this.registerSubscriber(ctx);
       await ctx.reply(
@@ -38,13 +37,11 @@ export class TelegramBotService implements OnModuleInit, OnModuleDestroy {
       );
     });
 
-    // Команда /stop
     this.bot.command('stop', async (ctx) => {
       await this.unregisterSubscriber(ctx);
       await ctx.reply('Вы отписались от рассылки. Для возобновления используйте /start');
     });
 
-    // Команда /help
     this.bot.command('help', async (ctx) => {
       await ctx.reply(
         'Доступные команды:\n\n' +
@@ -55,7 +52,6 @@ export class TelegramBotService implements OnModuleInit, OnModuleDestroy {
       );
     });
 
-    // Команда /status
     this.bot.command('status', async (ctx) => {
       const subscriber = await this.telegramSubscriberService.findByTelegramId(
         ctx.from.id.toString()
@@ -68,7 +64,6 @@ export class TelegramBotService implements OnModuleInit, OnModuleDestroy {
       }
     });
 
-    // Обработка ошибок
     this.bot.catch((err) => {
       this.logger.error('Bot error:', err);
     });
@@ -78,13 +73,11 @@ export class TelegramBotService implements OnModuleInit, OnModuleDestroy {
     const telegramId = ctx.from.id.toString();
 
     try {
-      // Проверяем, существует ли подписчик
       const existingSubscriber = await this.telegramSubscriberService.findByTelegramId(telegramId);
 
       if (existingSubscriber) {
-        // Обновляем существующего подписчика
         await this.telegramSubscriberService.update(
-          { filterMeta: { telegramId } } as any,
+          { telegramId },
           {
             username: ctx.from.username,
             firstName: ctx.from.first_name,
@@ -94,7 +87,6 @@ export class TelegramBotService implements OnModuleInit, OnModuleDestroy {
           }
         );
       } else {
-        // Создаем нового подписчика
         await this.telegramSubscriberService.create({
           telegramId,
           username: ctx.from.username,
@@ -118,7 +110,7 @@ export class TelegramBotService implements OnModuleInit, OnModuleDestroy {
 
     try {
       await this.telegramSubscriberService.update(
-        { filterMeta: { telegramId } } as any,
+        { telegramId },
         { isActive: false }
       );
 
@@ -133,7 +125,7 @@ export class TelegramBotService implements OnModuleInit, OnModuleDestroy {
     text: string,
     options?: {
       keyboard?: InlineKeyboard;
-      media?: any;
+      media?;
       type?: MessageType;
     }
   ): Promise<{ success: boolean; error?: string }> {
@@ -183,7 +175,6 @@ export class TelegramBotService implements OnModuleInit, OnModuleDestroy {
     } catch (error) {
       this.logger.error(`Failed to send message to ${telegramId}:`, error);
 
-      // Помечаем пользователя как заблокированного
       if (error.error_code === 403) {
         await this.telegramSubscriberService.update(
           { telegramId },

@@ -1,9 +1,9 @@
-import { 
-  Controller, 
-  Post, 
-  Get, 
-  Body, 
-  Param, 
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Param,
   Query,
   Put,
   Delete,
@@ -24,9 +24,8 @@ export class TelegramBroadcastController {
     private readonly telegramSubscriberService: TelegramSubscriberService,
     private readonly broadcastMessageService: BroadcastMessageService,
     private readonly broadcastJobService: BroadcastJobService,
-  ) {}
+  ) { }
 
-  // Сообщения для рассылки
   @Post('messages')
   @ApiOperation({ summary: 'Создать сообщение для рассылки' })
   @ApiResponse({ type: broadcastMessageDto.outputs.BroadcastMessageEntity })
@@ -51,9 +50,9 @@ export class TelegramBroadcastController {
   async getBroadcastMessage(
     @Param('messageId') messageId: string,
   ): Promise<broadcastMessageDto.outputs.BroadcastMessageEntity> {
-    return await this.broadcastMessageService.findOne({ 
-      filterMeta: { uuid: messageId } 
-    } as any);
+    return await this.broadcastMessageService.findOne({
+      uuid: messageId
+    });
   }
 
   @Put('messages/:messageId')
@@ -64,7 +63,7 @@ export class TelegramBroadcastController {
     @Body() updateDto: broadcastMessageDto.inputs.UpdateBroadcastMessageInput,
   ): Promise<broadcastMessageDto.outputs.BroadcastMessageEntity> {
     return await this.broadcastMessageService.update(
-      { filterMeta: { uuid: messageId } } as any,
+      { uuid: messageId },
       updateDto
     );
   }
@@ -75,12 +74,11 @@ export class TelegramBroadcastController {
   async deleteBroadcastMessage(
     @Param('messageId') messageId: string,
   ): Promise<broadcastMessageDto.outputs.BroadcastMessageEntity> {
-    return await this.broadcastMessageService.remove({ 
-      filterMeta: { uuid: messageId } 
-    } as any);
+    return await this.broadcastMessageService.remove({
+      uuid: messageId
+    });
   }
 
-  // Отправка рассылок
   @Post('messages/:messageUuid/send')
   @ApiOperation({ summary: 'Отправить рассылку' })
   @ApiResponse({ type: broadcastMessageDto.outputs.BroadcastMessageEntity })
@@ -110,7 +108,6 @@ export class TelegramBroadcastController {
     return await this.broadcastMessageService.cancelScheduledMessage(messageId);
   }
 
-  // Задачи рассылки
   @Get('jobs')
   @ApiOperation({ summary: 'Получить все задачи рассылки' })
   @ApiResponse({ type: [broadcastJobDto.outputs.BroadcastJobEntity] })
@@ -135,7 +132,7 @@ export class TelegramBroadcastController {
   async getBroadcastJobsByStatus(
     @Param('status') status: string,
   ): Promise<broadcastJobDto.outputs.BroadcastJobEntity[]> {
-    return await this.broadcastJobService.getJobsByStatus(status as any);
+    return await this.broadcastJobService.getJobsByStatus(status);
   }
 
   @Get('jobs/recent/:limit')
@@ -147,7 +144,6 @@ export class TelegramBroadcastController {
     return await this.broadcastJobService.getRecentJobs(limit);
   }
 
-  // Подписчики
   @Get('subscribers')
   @ApiOperation({ summary: 'Получить подписчиков' })
   @ApiResponse({ type: [telegramSubscriberDto.outputs.TelegramSubscriberEntity] })
@@ -193,7 +189,7 @@ export class TelegramBroadcastController {
     @Body() updateDto: telegramSubscriberDto.inputs.UpdateTelegramSubscriberInput,
   ): Promise<telegramSubscriberDto.outputs.TelegramSubscriberEntity> {
     return await this.telegramSubscriberService.update(
-      { filterMeta: { telegramId } } as any,
+      { telegramId },
       updateDto
     );
   }
@@ -218,7 +214,6 @@ export class TelegramBroadcastController {
     return await this.telegramSubscriberService.removeTags(telegramId, tags);
   }
 
-  // Статистика
   @Get('stats/subscribers')
   @ApiOperation({ summary: 'Получить статистику подписчиков' })
   async getSubscriberStats() {

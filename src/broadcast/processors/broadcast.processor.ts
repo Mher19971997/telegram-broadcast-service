@@ -34,40 +34,33 @@ export class BroadcastProcessor {
     this.logger.log(`Starting broadcast job: ${jobId}`);
 
     try {
-      // Получаем задачу и сообщение
       const broadcastJob = await this.broadcastJobService.findOne({
-        filterMeta: { uuid: jobId }
-      } as any);
-      console.log(broadcastJob,"broadcastJob");
-      
+        uuid: jobId
+      });
+
       const message = await this.broadcastMessageService.findOne({
-        filterMeta: { uuid: messageId }
-      } as any);
-      console.log(message,"messagemessage");
-      
+        uuid: messageId
+      });
+
       if (!broadcastJob || !message) {
         throw new Error('Broadcast job or message not found');
       }
 
-      // Получаем подписчиков для рассылки
       const subscribers = await this.telegramSubscriberService.getActiveSubscribers(
         message.targetTags
       );
-      
-      // Начинаем выполнение задачи
+
       await this.broadcastJobService.startJob(jobId, subscribers.length);
-      
+
       this.logger.log(`Found ${subscribers.length} subscribers for broadcast`);
 
       let sentCount = 0;
       let failedCount = 0;
       let blockedCount = 0;
-      const errors: any[] = [];
+      const errors: { subscriberId: string; error: any; }[] = [];
 
-      // Отправляем сообщения порциями
       const BATCH_SIZE = 30;
-      console.log(111111);
-      
+
       for (let i = 0; i < subscribers.length; i += BATCH_SIZE) {
         const batch = subscribers.slice(i, i + BATCH_SIZE);
 
@@ -92,7 +85,6 @@ export class BroadcastProcessor {
                 error: result.error,
               });
 
-              // Проверяем, заблокирован ли подписчик
               const updatedSubscriber = await this.telegramSubscriberService.findByTelegramId(
                 subscriber.telegramId
               );
@@ -112,10 +104,8 @@ export class BroadcastProcessor {
 
         await Promise.all(promises);
 
-        // Обновляем прогресс
         const progressPercent = Math.round(((i + batch.length) / subscribers.length) * 100);
-        console.log(jobId,777);
-        
+
         await this.broadcastJobService.updateProgress(jobId, {
           sentCount,
           failedCount,
@@ -124,18 +114,15 @@ export class BroadcastProcessor {
           progressPercent,
         });
 
-        // Обновляем прогресс задачи
         job.progress(progressPercent);
 
         this.logger.log(`Broadcast progress: ${progressPercent}% (${sentCount}/${subscribers.length})`);
 
-        // Небольшая задержка между батчами
         if (i + BATCH_SIZE < subscribers.length) {
           await new Promise(resolve => setTimeout(resolve, 1000));
         }
       }
 
-      // Завершаем задачу
       await this.broadcastJobService.completeJob(jobId, {
         sentCount,
         failedCount,

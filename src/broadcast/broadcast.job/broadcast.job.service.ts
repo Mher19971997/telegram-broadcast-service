@@ -139,7 +139,7 @@ export class BroadcastJobService extends CommonService<
     return result.data;
   }
 
-  async cleanupOldJobs(daysOld = 30, userOrTxn?: any): Promise<number> {
+  async cleanupOldJobs(daysOld = 30): Promise<number> {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - daysOld);
 
@@ -149,11 +149,11 @@ export class BroadcastJobService extends CommonService<
         status: { in: [JobStatus.COMPLETED, JobStatus.FAILED] },
       },
       queryMeta: { paginate: false },
-    } as any, userOrTxn);
+    });
 
     let deletedCount = 0;
     for (const job of oldJobs.data) {
-      await this.remove({ filterMeta: { uuid: job.uuid } } as any, userOrTxn);
+      await this.remove({ filterMeta: { uuid: job.uuid } });
       deletedCount++;
     }
 

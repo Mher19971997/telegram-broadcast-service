@@ -27,12 +27,12 @@ export class TelegramSubscriberService extends CommonService<
     super({ model: telegramSubscriberModel, paginateService });
   }
 
-  async findByTelegramId(telegramId: string, userOrTxn?: any): Promise<telegramSubscriberDto.outputs.TelegramSubscriberEntity | null> {
-    return await this.findOne({ filterMeta: { telegramId } } as any, userOrTxn);
+  async findByTelegramId(telegramId: string): Promise<telegramSubscriberDto.outputs.TelegramSubscriberEntity | null> {
+    return await this.findOne({ telegramId });
   }
 
-  async getActiveSubscribers(targetTags?: string[], userOrTxn?: any): Promise<telegramSubscriberDto.outputs.TelegramSubscriberEntity[]> {
-    const filter: any = {
+  async getActiveSubscribers(targetTags?: string[]): Promise<telegramSubscriberDto.outputs.TelegramSubscriberEntity[]> {
+    const filter = {
       filterMeta: {
         isActive: true,
         isBlocked: false,
@@ -43,66 +43,63 @@ export class TelegramSubscriberService extends CommonService<
       filter.filterMeta.tags = { [Op.overlap]: targetTags };
     }
 
-    const result = await this.findAll(filter, userOrTxn);
+    const result = await this.findAll(filter);
     return result.data;
   }
 
-  async addTags(telegramId: string, tags: string[], userOrTxn?: any): Promise<telegramSubscriberDto.outputs.TelegramSubscriberEntity | null> {
-    const subscriber = await this.findByTelegramId(telegramId, userOrTxn);
+  async addTags(telegramId: string, tags: string[]): Promise<telegramSubscriberDto.outputs.TelegramSubscriberEntity | null> {
+    const subscriber = await this.findByTelegramId(telegramId);
 
     if (subscriber) {
       const currentTags = subscriber.tags || [];
       const newTags = [...new Set([...currentTags, ...tags])];
 
       return await this.update(
-        { filterMeta: { telegramId } } as any,
-        { tags: newTags } as any,
-        userOrTxn
+        { telegramId },
+        { tags: newTags },
       );
     }
 
     return null;
   }
 
-  async removeTags(telegramId: string, tags: string[], userOrTxn?: any): Promise<telegramSubscriberDto.outputs.TelegramSubscriberEntity | null> {
-    const subscriber = await this.findByTelegramId(telegramId, userOrTxn);
+  async removeTags(telegramId: string, tags: string[]): Promise<telegramSubscriberDto.outputs.TelegramSubscriberEntity | null> {
+    const subscriber = await this.findByTelegramId(telegramId);
 
     if (subscriber) {
       const currentTags = subscriber.tags || [];
-      const newTags = currentTags.filter((tag:any) => !tags.includes(tag));
+      const newTags = currentTags.filter((tag: string) => !tags.includes(tag));
 
       return await this.update(
-        { filterMeta: { telegramId } } as any,
-        { tags: newTags } as any,
-        userOrTxn
+        { telegramId },
+        { tags: newTags },
       );
     }
 
     return null;
   }
 
-  async getSubscriberStats(userOrTxn?: any): Promise<{
+  async getSubscriberStats(): Promise<{
     totalSubscribers: number;
     activeSubscribers: number;
     blockedSubscribers: number;
     subscribersByTags: Record<string, number>;
   }> {
     const [totalResult, activeResult, blockedResult] = await Promise.all([
-      this.findAll({ queryMeta: { paginate: false } } as any, userOrTxn),
+      this.findAll({ queryMeta: { paginate: false } }),
       this.findAll({
         filterMeta: { isActive: true },
         queryMeta: { paginate: false }
-      } as any, userOrTxn),
+      }),
       this.findAll({
         filterMeta: { isBlocked: true },
         queryMeta: { paginate: false }
-      } as any, userOrTxn),
+      }),
     ]);
 
-    // Подсчет по тегам
     const subscribersByTags: Record<string, number> = {};
     activeResult.data.forEach(subscriber => {
-      subscriber.tags?.forEach((tag: any) => {
+      subscriber.tags?.forEach((tag: string) => {
         subscribersByTags[tag] = (subscribersByTags[tag] || 0) + 1;
       });
     });
