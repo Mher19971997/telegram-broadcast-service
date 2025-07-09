@@ -1,0 +1,40 @@
+{
+  "exclude": [
+    "node_modules"
+  ],
+  "compilerOptions": {
+    "module": "CommonJS",
+    "declaration": true,
+    "removeComments": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "node",
+    "target": "ESNext",
+    "sourceMap": true,
+    "baseUrl": "./",
+    "incremental": true,
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "paths": {
+      "@telegram_broadcast_service/src": ["src"],
+      "@telegram_broadcast_service/src/*": ["src/*"],
+      "@telegram_broadcast_service/migration": ["migration"],
+      "@telegram_broadcast_service/migration/*": ["migration/*"],
+      "@telegram_broadcast_service/configuration": ["configuration"],
+      "@telegram_broadcast_service/configuration/*": ["configuration/*"],
+      "@telegram_broadcast_service/src/auth": ["src/auth"],
+      "@telegram_broadcast_service/src/auth/*": ["src/auth/*"],
+      "@telegram_broadcast_service/src/user": ["src/user"],
+      "@telegram_broadcast_service/src/user/*": ["src/user/*"],
+      "@telegram_broadcast_service/shared": ["libs/shared"],
+      "@telegram_broadcast_service/shared/*": ["libs/shared/*"],
+      "@telegram_broadcast_service/service": ["libs/service"],
+      "@telegram_broadcast_service/service/*": ["libs/service/*"]
+    }
+  }
+}

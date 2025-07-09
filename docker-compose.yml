@@ -1,0 +1,49 @@
+services:
+  redis:
+    image: redis:latest
+    hostname: redis
+    restart: always
+    command: redis-server --requirepass rB4dRlrn38FGrth1XdHggEgW1YZbfb0B
+    ports:
+      - '6333:6379'
+    networks:
+      - telegram-broadcast-service-network
+
+  postgres:
+    image: postgres
+    container_name: postgres_container
+    hostname: postgres
+    restart: always
+    environment:
+      POSTGRES_DB: broadcast
+      POSTGRES_USER: broadcast
+      POSTGRES_PASSWORD: qwerqyuiqpasdqgqwerghjkmnnbvch
+      PGDATA: /var/lib/postgresql/data
+    ports:
+      - '5433:5432'  # Maps host 5433 to container 5432
+    networks:
+      - telegram-broadcast-service-network
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '6001:6001'
+    networks:
+      - telegram-broadcast-service-network
+    depends_on:
+      - redis
+      - postgres
+ 
+    command: [ "npm", "run", "start:prod" ]
+
+volumes:
+  db-data:
+
+networks:
+  telegram-broadcast-service-network:
+    external: true
